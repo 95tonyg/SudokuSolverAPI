@@ -19,7 +19,6 @@
                 }
             }
 
-
             return solvedPuzzle;
         }
 
@@ -52,5 +51,66 @@
             }
         }
 
+        private static bool CheckIfValid(List<List<int>> puzzle, int row, int col)
+        {
+            int value = puzzle[row][col];
+            bool valid = true;
+
+            //Checking if value already exists on row.
+            for(int i=0; i < puzzle[row].Count; i++)
+            {
+                //if we find the value where it is not the value itself, the solution is not valid.
+                if (i != col && puzzle[row][i] == value)
+                {
+                    valid = false;
+                    break;
+                }
+            }
+
+            //Checking if value already exists on column
+            //If we have already failed during the first check, we can just skip this one
+            if(valid)
+            {
+                for(int i=0; i<puzzle.Count; i++)
+                {
+                    if(i != row && puzzle[i][col] == value)
+                    {
+                        valid = false;
+                        break;
+                    }
+                }
+            }
+
+            //Checking if value already exists in the same square
+            if (valid)
+            {
+                int sqrt = (int)Math.Sqrt(puzzle.Count);
+
+                int rowOffset = sqrt * ((int) (row / sqrt));
+                int colOffset = sqrt * ((int) (col / sqrt));
+
+
+                for (int i=0; i<sqrt; i++)
+                {
+                    if (valid)
+                    {
+                        for (int j = 0; j < sqrt; j++)
+                        {
+                            if ((i + rowOffset != row && j + colOffset != col) && puzzle[i + rowOffset][j + colOffset] == value)
+                            {
+                                valid = false;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return valid;
+        }
     }
 }
