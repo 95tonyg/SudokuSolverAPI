@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using SudokuSolver.Logics;
 
 namespace SudokuSolver.Controllers
 {
@@ -17,29 +18,18 @@ namespace SudokuSolver.Controllers
         [HttpPost(Name = "SolveSudoku")]
         public IActionResult Post(SudokuRequest request)
         {
-            Console.WriteLine("Request");
-            //Displaying the passed in sudoku puzzle in the console.
-            for(int i=0;i< request.UnsolvedSudoku.Count; i++)
+
+            List<List<int>> solvedPuzzle = Logics.SudokuSolver.SolvePuzzle(request.UnsolvedSudoku);
+            bool solvable = false;
+            if (solvedPuzzle.Count > 0)
             {
-                Console.WriteLine();
-                if(i == 3 || i == 6)
-                {
-                    Console.WriteLine("---------------------");
-                }
-                for (int j=0; j < request.UnsolvedSudoku[i].Count; j++)
-                {
-                    Console.Write(request.UnsolvedSudoku[i][j] + " ");
-                    if(j == 2 || j == 5)
-                    {
-                        Console.Write("| ");
-                    }
-                }
+                solvable = true;
             }
 
             var result = new Sudoku
             {
-                Solvable = true,
-                SudokuMatrix = new List<List<int>> { new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 }, new List<int>{ 1 } }
+                Solvable = solvable,
+                SudokuMatrix = solvedPuzzle,
             };
 
             return new JsonResult(result);
