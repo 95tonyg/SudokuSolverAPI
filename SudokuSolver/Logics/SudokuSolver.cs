@@ -8,17 +8,17 @@
 
             //Printing unsolved puzzle
             PrintPuzzleToConsole(unsolvedPuzzle);
+            HashSet<List<int>> givenNumberPositions = SetHintNumbersHashSet(unsolvedPuzzle);
 
             //For the sudoku puzzles, 0's denote empty spaces
 
-            for(int i=0; i<unsolvedPuzzle.Count; i++)
+            for (int i=0; i<unsolvedPuzzle.Count; i++)
             {
                 for(int j=0; j< unsolvedPuzzle[i].Count; j++)
                 {
 
                 }
             }
-
             return solvedPuzzle;
         }
 
@@ -49,6 +49,29 @@
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Used to create a HashSet of positions of the given numbers in an unsolved puzzle so that they aren't overwritten by accident.
+        /// </summary>
+        /// <param name="puzzle"></param>
+        /// <returns>Returns a HashSet of value and position</returns>
+        private static HashSet<List<int>> SetHintNumbersHashSet(List<List<int>> puzzle)
+        {
+            HashSet<List<int>> hintHashSet = new HashSet<List<int>>();
+
+            for(int i=0; i<puzzle.Count; i++)
+            {
+                for (int j = 0; j < puzzle[i].Count; j++)
+                {
+                    if (puzzle[i][j] != 0)
+                    {
+                        hintHashSet.Add(new List<int> { i, j });
+                    }                   
+                }
+            }
+
+            return hintHashSet;
         }
 
         private static bool CheckIfValid(List<List<int>> puzzle, int row, int col)
