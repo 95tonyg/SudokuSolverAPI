@@ -1,14 +1,17 @@
-﻿namespace SudokuSolver.Logics
+﻿using System.Collections.Generic;
+
+namespace SudokuSolver.Logics
 {
     public static class SudokuSolver
     {
         public static List<List<int>> SolvePuzzle(List<List<int>> unsolvedPuzzle)
         {
-            List<List<int>> solvedPuzzle = new List<List<int>>();
 
             //Printing unsolved puzzle
-            PrintPuzzleToConsole(unsolvedPuzzle);
-            HashSet<List<int>> givenNumberPositions = SetHintNumbersHashSet(unsolvedPuzzle);
+            PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { -1,-1});
+            List<List<int>> givenNumberPositions = SetHintNumbersListSet(unsolvedPuzzle);
+
+            Console.WriteLine(String.Join(",", givenNumberPositions));
 
             //For the sudoku puzzles, 0's denote empty spaces
 
@@ -16,13 +19,81 @@
             {
                 for(int j=0; j< unsolvedPuzzle[i].Count; j++)
                 {
+                    //If the current position is a given number, we ignore
+                    //Otherwise we try numbers.
+                    if(!CheckIfListIsInListSet(givenNumberPositions, new List<int> {i,j})){
+                        while (true)
+                        {
+                            if (unsolvedPuzzle[i][j] < unsolvedPuzzle.Count)
+                            {
+                                unsolvedPuzzle[i][j]++;
+                                PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { i, j});
+                                if (CheckIfValid(unsolvedPuzzle, i, j))
+                                {
+                                    //If the value is valid, we go onto the next cell
+                                    break;
+                                }
+                            }
+                            //If the value is greater than 9, we need to back track.
+                            else
+                            {
+                                unsolvedPuzzle[i][j] = 0;
+                                if (j == 0)
+                                {
+                                    i--;
+                                    j = unsolvedPuzzle.Count - 1;
+                                }
+                                else
+                                {
+                                    j--;
+                                }
 
+                                while (true)
+                                {
+                                    if (CheckIfListIsInListSet(givenNumberPositions, new List<int> { i, j }))
+                                    {
+                                        //If the spot is one that is given, we need to continue back tracking.
+                                        if (j == 0)
+                                        {
+                                            i--;
+                                            j = unsolvedPuzzle.Count - 1;
+                                        }
+                                        else
+                                        {
+                                            j--;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                    
+                                }
+
+
+                                if(j == 0)
+                                {
+                                    i--;
+                                    j= unsolvedPuzzle.Count-1;
+                                }
+                                else
+                                {
+                                    j--;
+                                }
+                                break;
+                            }
+                        }
+                        
+                    }
                 }
             }
-            return solvedPuzzle;
+
+            PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { -1, -1 });
+
+            return unsolvedPuzzle;
         }
 
-        private static void PrintPuzzleToConsole(List<List<int>> puzzle)
+        private static void PrintPuzzleToConsole(List<List<int>> puzzle, List<int> currentPosition)
         {
             //Displaying the passed in sudoku puzzle in the console.
             for (int i = 0; i < puzzle.Count; i++)
@@ -36,7 +107,16 @@
                 {
                     if (puzzle[i][j] != 0)
                     {
-                        Console.Write(puzzle[i][j] + " ");
+                        if (currentPosition[0] == i && currentPosition[1] == j)
+                        {
+                            Console.BackgroundColor = ConsoleColor.Blue;
+                            Console.Write(puzzle[i][j] + " ");
+                            Console.BackgroundColor = ConsoleColor.Black;
+                        }
+                        else
+                        {
+                            Console.Write(puzzle[i][j] + " ");
+                        }
                     }
                     else
                     {
@@ -49,6 +129,8 @@
                     }
                 }
             }
+            Console.WriteLine("");
+            Console.WriteLine("************************************************");
         }
 
         /// <summary>
@@ -56,9 +138,9 @@
         /// </summary>
         /// <param name="puzzle"></param>
         /// <returns>Returns a HashSet of value and position</returns>
-        private static HashSet<List<int>> SetHintNumbersHashSet(List<List<int>> puzzle)
+        private static List<List<int>> SetHintNumbersListSet(List<List<int>> puzzle)
         {
-            HashSet<List<int>> hintHashSet = new HashSet<List<int>>();
+            List<List<int>> hintHashSet = new List<List<int>>();
 
             for(int i=0; i<puzzle.Count; i++)
             {
@@ -67,11 +149,28 @@
                     if (puzzle[i][j] != 0)
                     {
                         hintHashSet.Add(new List<int> { i, j });
+                        Console.WriteLine("Adding " + i + " " + j + " to HashSet");
                     }                   
                 }
             }
 
             return hintHashSet;
+        }
+
+        private static bool CheckIfListIsInListSet(List<List<int>> listSet, List<int> list) 
+        {
+            bool inSet = false;
+
+            listSet.ForEach(x =>
+            {
+                if (x.SequenceEqual(list))
+                {
+                    inSet = true;
+                    return;
+                }
+            });
+
+            return inSet;
         }
 
         private static bool CheckIfValid(List<List<int>> puzzle, int row, int col)
