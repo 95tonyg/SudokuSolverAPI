@@ -38,30 +38,15 @@ namespace SudokuSolver.Logics
                             else
                             {
                                 unsolvedPuzzle[i][j] = 0;
-                                if (j == 0)
-                                {
-                                    i--;
-                                    j = unsolvedPuzzle.Count - 1;
-                                }
-                                else
-                                {
-                                    j--;
-                                }
+
+                                BackTrack(i, j, unsolvedPuzzle.Count);
 
                                 while (true)
                                 {
                                     if (CheckIfListIsInListSet(givenNumberPositions, new List<int> { i, j }))
                                     {
                                         //If the spot is one that is given, we need to continue back tracking.
-                                        if (j == 0)
-                                        {
-                                            i--;
-                                            j = unsolvedPuzzle.Count - 1;
-                                        }
-                                        else
-                                        {
-                                            j--;
-                                        }
+                                        BackTrack(i, j, unsolvedPuzzle.Count);
                                     }
                                     else
                                     {
@@ -70,16 +55,8 @@ namespace SudokuSolver.Logics
                                     
                                 }
 
+                                BackTrack(i, j, unsolvedPuzzle.Count);
 
-                                if(j == 0)
-                                {
-                                    i--;
-                                    j= unsolvedPuzzle.Count-1;
-                                }
-                                else
-                                {
-                                    j--;
-                                }
                                 break;
                             }
                         }
@@ -91,6 +68,20 @@ namespace SudokuSolver.Logics
             PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { -1, -1 });
 
             return unsolvedPuzzle;
+        }
+
+        private static List<int> BackTrack(int i, int j, int maxValue)
+        {
+            if (j == 0)
+            {
+                i--;
+                j = maxValue - 1;
+            }
+            else
+            {
+                j--;
+            }
+            return new List<int> { i, j };
         }
 
         private static void PrintPuzzleToConsole(List<List<int>> puzzle, List<int> currentPosition)
