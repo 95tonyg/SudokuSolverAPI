@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using static System.Net.Mime.MediaTypeNames;
+using System.Linq;
 
 namespace SudokuSolver.Logics
 {
@@ -7,67 +9,73 @@ namespace SudokuSolver.Logics
         public static List<List<int>> SolvePuzzle(List<List<int>> unsolvedPuzzle)
         {
 
-            //Printing unsolved puzzle
-            PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { -1,-1});
-            List<List<int>> givenNumberPositions = SetHintNumbersListSet(unsolvedPuzzle);
-
-            Console.WriteLine(String.Join(",", givenNumberPositions));
-
-            //For the sudoku puzzles, 0's denote empty spaces
-
-            for (int i=0; i<unsolvedPuzzle.Count; i++)
+            if (SolvablePuzzle(unsolvedPuzzle))
             {
-                for(int j=0; j< unsolvedPuzzle[i].Count; j++)
+                //Printing unsolved puzzle
+                PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { -1, -1 });
+                List<List<int>> givenNumberPositions = SetHintNumbersListSet(unsolvedPuzzle);
+
+                Console.WriteLine(String.Join(",", givenNumberPositions));
+
+                //For the sudoku puzzles, 0's denote empty spaces
+
+                for (int i = 0; i < unsolvedPuzzle.Count; i++)
                 {
-                    //If the current position is a given number, we ignore
-                    //Otherwise we try numbers.
-                    if(!CheckIfListIsInListSet(givenNumberPositions, new List<int> {i,j})){
-                        while (true)
+                    for (int j = 0; j < unsolvedPuzzle[i].Count; j++)
+                    {
+                        //If the current position is a given number, we ignore
+                        //Otherwise we try numbers.
+                        if (!CheckIfListIsInListSet(givenNumberPositions, new List<int> { i, j }))
                         {
-                            if (unsolvedPuzzle[i][j] < unsolvedPuzzle.Count)
+                            while (true)
                             {
-                                unsolvedPuzzle[i][j]++;
-                                PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { i, j});
-                                if (CheckIfValid(unsolvedPuzzle, i, j))
+                                if (unsolvedPuzzle[i][j] < unsolvedPuzzle.Count)
                                 {
-                                    //If the value is valid, we go onto the next cell
+                                    unsolvedPuzzle[i][j]++;
+                                    PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { i, j });
+                                    if (CheckIfValid(unsolvedPuzzle, i, j))
+                                    {
+                                        //If the value is valid, we go onto the next cell
+                                        break;
+                                    }
+                                }
+                                //If the value is greater than 9, we need to back track.
+                                else
+                                {
+                                    unsolvedPuzzle[i][j] = 0;
+
+                                    BackTrack(i, j, unsolvedPuzzle.Count);
+
+                                    while (true)
+                                    {
+                                        if (CheckIfListIsInListSet(givenNumberPositions, new List<int> { i, j }))
+                                        {
+                                            //If the spot is one that is given, we need to continue back tracking.
+                                            BackTrack(i, j, unsolvedPuzzle.Count);
+                                        }
+                                        else
+                                        {
+                                            break;
+                                        }
+
+                                    }
+
+                                    BackTrack(i, j, unsolvedPuzzle.Count);
+
                                     break;
                                 }
                             }
-                            //If the value is greater than 9, we need to back track.
-                            else
-                            {
-                                unsolvedPuzzle[i][j] = 0;
 
-                                BackTrack(i, j, unsolvedPuzzle.Count);
-
-                                while (true)
-                                {
-                                    if (CheckIfListIsInListSet(givenNumberPositions, new List<int> { i, j }))
-                                    {
-                                        //If the spot is one that is given, we need to continue back tracking.
-                                        BackTrack(i, j, unsolvedPuzzle.Count);
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
-                                    
-                                }
-
-                                BackTrack(i, j, unsolvedPuzzle.Count);
-
-                                break;
-                            }
                         }
-                        
                     }
                 }
+
+                PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { -1, -1 });
+
+                return unsolvedPuzzle;
             }
 
-            PrintPuzzleToConsole(unsolvedPuzzle, new List<int> { -1, -1 });
-
-            return unsolvedPuzzle;
+            return new List<List<int>>();
         }
 
         private static List<int> BackTrack(int i, int j, int maxValue)
@@ -224,6 +232,20 @@ namespace SudokuSolver.Logics
             }
 
             return valid;
+        }
+
+        private static bool SolvablePuzzle(List<List<int>> puzzle)
+        {
+            //Doing some basic checks to see if the puzzle is invalid.
+            int longestRow = puzzle.Select(x => x.Count).OrderBy(x => x).Last();
+            int shortestRow = puzzle.Select(x => x.Count).OrderBy(x => x).First();
+            if ((puzzle.Count != longestRow) && (puzzle.Count != shortestRow))
+            {
+                //If the column count, and the count of the longest and shortest rows don't match, we do not have a valid puzzle
+                return false;
+            }
+
+            return true;
         }
     }
 }
